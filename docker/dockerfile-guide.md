@@ -10,6 +10,9 @@
     - [.dockerignore file](#dockerignore-file)
   - [Dockerfile 常用命令](#dockerfile-常用命令)
     - [From/RUN](#fromrun)
+      - [1. `FROM`](#1-from)
+      - [](#)
+      - [2. `RUN`](#2-run)
     - [WorkDir / COPY / ADD](#workdir--copy--add)
     - [ENV EXPOSE](#env-expose)
     - [ENTRYPOINT vs CMD](#entrypoint-vs-cmd)
@@ -22,6 +25,7 @@
   - [docker镜像的生成方式](#docker镜像的生成方式)
     - [概述](#概述-1)
     - [方式](#方式)
+  - [彩蛋 - BuildKit](#彩蛋---buildkit)
 ## 前置 - docker是什么
 * Docker是一套平台即服务（PaaS）产品，它使用操作系统级的虚拟化，以容器的形式来交付软件。
 
@@ -130,6 +134,51 @@ README-secret.md
 ##  Dockerfile 常用命令
 
 ### From/RUN
+#### 1. `FROM`
+
+```dockerfile
+FROM [--platform=<platform>] <image> [AS <name>]
+```
+
+Or
+
+```dockerfile
+FROM [--platform=<platform>] <image>[:<tag>] [AS <name>]
+```
+
+Or
+
+```dockerfile
+FROM [--platform=<platform>] <image>[@<digest>] [AS <name>]
+```
+
+Tips:
+* `ARG` is the only instruction that may precede FROM in the Dockerfile
+* `FROM` can appear multiple times within a single Dockerfile to create multiple images
+* Optionally a name can be given to a new build stage by adding `AS name` to the `FROM` instruction. The name can be used in subsequent `FROM` and `COPY --from=<name>` instructions to refer to the image built in this stage.
+* The `tag` or `digest` values are optional. If you omit either of them, the builder assumes a `latest` tag by default. The builder returns an error if it cannot find the `tag` value.
+
+#### 
+An `ARG` declared before a `FROM` is outside of a build stage(在构建阶段之外), so it can’t be used in any instruction after a `FROM`. To use the default value of an ARG declared before the first `FROM` use an `ARG` instruction without a value inside of a build stage:
+
+```dockerfile
+ARG VERSION=latest
+FROM busybox:$VERSION
+ARG VERSION
+RUN echo $VERSION > image_version
+```
+  
+#### 2. `RUN`
+
+`RUN` has 2 forms:
+
+`RUN <command>` (shell form, the command is run in a shell, which by default is `/bin/sh -c` on Linux or `cmd /S /C` on Windows)
+`RUN ["executable", "param1", "param2"]` (exec form)
+
+_Notes_: 
+1. The __exec form__ is parsed as a JSON array, which means that you must use double-quotes (`“`) around words not single-quotes (`‘`).
+2. `RUN [ "echo", "$HOME" ]`与 `RUN [ "sh", "-c", "echo $HOME" ]` 有什么区别,一起来看下例子 [`./assets/dockerfile.run`](https://github.com/warm-native/docs/tree/master/docker/assets/dockerfile.run)
+  
 
 ### WorkDir / COPY / ADD 
 
@@ -169,3 +218,5 @@ Each instruction you create in your Dockerfile results in a new image layer bein
 ### 方式
   * 通过docker容器生成镜像
   * 通过dockerfile生成镜像；
+
+## 彩蛋 - BuildKit

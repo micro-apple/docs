@@ -12,7 +12,10 @@
     - [From/RUN](#fromrun)
       - [1. `FROM`](#1-from)
       - [2. `RUN`](#2-run)
-    - [WorkDir / COPY / ADD](#workdir--copy--add)
+    - [WORKDIR / ADD / COPY](#workdir--add--copy)
+      - [1. `WORKDIR`](#1-workdir)
+      - [2. `COPY`](#2-copy)
+      - [3. `ADD`](#3-add)
     - [ENV EXPOSE](#env-expose)
     - [ENTRYPOINT vs CMD](#entrypoint-vs-cmd)
     - [ARG](#arg)
@@ -155,7 +158,7 @@ Tips:
 * `FROM` can appear multiple times within a single Dockerfile to create multiple images
 * Optionally a name can be given to a new build stage by adding `AS name` to the `FROM` instruction. The name can be used in subsequent `FROM` and `COPY --from=<name>` instructions to refer to the image built in this stage.
 * The `tag` or `digest` values are optional. If you omit either of them, the builder assumes a `latest` tag by default. The builder returns an error if it cannot find the `tag` value.
-* `ARG` is the only instruction that may precede FROM in the Dockerfile
+* `ARG` is the only instruction that may precede `FROM` in the Dockerfile
 * An `ARG` declared before a `FROM` is outside of a build stage(在构建阶段之外), so it can’t be used in any instruction after a `FROM`. To use the default value of an ARG declared before the first `FROM` use an `ARG` instruction without a value inside of a build stage:
 
   ```dockerfile
@@ -175,9 +178,38 @@ Tips:
 _Notes_: 
 1. The __exec form__ is parsed as a JSON array, which means that you must use double-quotes (`“`) around words not single-quotes (`‘`).
 2. `RUN [ "echo", "$HOME" ]`与 `RUN [ "sh", "-c", "echo $HOME" ]` 有什么区别,一起来看下例子 [`./assets/dockerfile.run`](https://github.com/warm-native/docs/tree/master/docker/assets/dockerfile.run)
-  
+3. The cache for `RUN` instructions is validated automatically during the next build. `docker build`时可以添加 `--no-cache`来解除缓存， 当然也可以通过`COPY`、`ADD`指令来使缓存无效。
+   
+### WORKDIR / ADD / COPY 
 
-### WorkDir / COPY / ADD 
+#### 1. `WORKDIR`
+
+`WORKDIR`为`Dockerfile`中的`RUN`, `CMD`, `ENTRYPOINT`, `COPY`, `ADD`指令设置工作目录，如果不存在将会被创建（即使后面没有使用这个工作目录），允许多次定义，也允许使用相对路径，也可以解析之前通过`ENV`设置的路径。
+
+_注_: 
+  1. 使用相对路径时会相对之前的`WORKDIR`指令来创建，如果是首次创建，也就是在根目录`/`.
+  2. 为了`Dockerfile`的易维护性，建议`WORKDIR`只声明一次. 
+
+
+#### 2. `COPY`
+
+```dockerfile
+COPY [--chown=<user>:<group>] <src>... <dest>
+COPY [--chown=<user>:<group>] ["<src>",... "<dest>"]
+```
+_注_: 如果路径中包含空格只能采用第二种方式
+
+#### 3. `ADD`
+
+```
+ADD [--chown=<user>:<group>] <src>... <dest>
+ADD [--chown=<user>:<group>] ["<src>",... "<dest>"]
+```
+
+`ADD`相对于`COPY`更强大：
+* It can handle remote URLs
+* It can also auto-extract tar files.
+
 
 ### ENV EXPOSE 
 

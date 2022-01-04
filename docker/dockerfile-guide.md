@@ -11,7 +11,6 @@
   - [Dockerfile 常用命令](#dockerfile-常用命令)
     - [From/RUN](#fromrun)
       - [1. `FROM`](#1-from)
-      - [](#)
       - [2. `RUN`](#2-run)
     - [WorkDir / COPY / ADD](#workdir--copy--add)
     - [ENV EXPOSE](#env-expose)
@@ -153,20 +152,18 @@ FROM [--platform=<platform>] <image>[@<digest>] [AS <name>]
 ```
 
 Tips:
-* `ARG` is the only instruction that may precede FROM in the Dockerfile
 * `FROM` can appear multiple times within a single Dockerfile to create multiple images
 * Optionally a name can be given to a new build stage by adding `AS name` to the `FROM` instruction. The name can be used in subsequent `FROM` and `COPY --from=<name>` instructions to refer to the image built in this stage.
 * The `tag` or `digest` values are optional. If you omit either of them, the builder assumes a `latest` tag by default. The builder returns an error if it cannot find the `tag` value.
+* `ARG` is the only instruction that may precede FROM in the Dockerfile
+* An `ARG` declared before a `FROM` is outside of a build stage(在构建阶段之外), so it can’t be used in any instruction after a `FROM`. To use the default value of an ARG declared before the first `FROM` use an `ARG` instruction without a value inside of a build stage:
 
-#### 
-An `ARG` declared before a `FROM` is outside of a build stage(在构建阶段之外), so it can’t be used in any instruction after a `FROM`. To use the default value of an ARG declared before the first `FROM` use an `ARG` instruction without a value inside of a build stage:
-
-```dockerfile
-ARG VERSION=latest
-FROM busybox:$VERSION
-ARG VERSION
-RUN echo $VERSION > image_version
-```
+  ```dockerfile
+  ARG VERSION=latest
+  FROM busybox:$VERSION
+  ARG VERSION
+  RUN echo $VERSION > image_version
+  ```
   
 #### 2. `RUN`
 

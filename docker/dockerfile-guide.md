@@ -33,13 +33,13 @@
   
 * 容器之间相互隔离，它们可以通过明确定义的通道相互通信。
   
-![Image](./assets/docker-architecture.png)
+![Image](./assets/images/docker-architecture.png)
 
 
 ## Dockerfile是什么
 
 ### 概述
-![Image](./assets/dockerfile01.png)
+![Image](./assets/images/dockerfile01.png)
 
 * Docker可以通过读取`Dockerfile`中的指令自动构建镜像。
 * `Dockerfile`是一个文本文件，定义从一个镜像开始，它包含了用户可以在命令行上调用的所有命令，最后可以通过`docker build` 组装成一个镜像。
@@ -87,7 +87,7 @@ CMD python /app/app.py
 ```
 #
 
-![Image](./assets/dockerfile02.png)
+![Image](./assets/images/dockerfile02.png)
 
 注解：
 1. Dockerfile 头信息

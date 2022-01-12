@@ -171,9 +171,8 @@ Tips:
 #### 2. `RUN`
 
 `RUN` has 2 forms:
-
-`RUN <command>` (shell form, the command is run in a shell, which by default is `/bin/sh -c` on Linux or `cmd /S /C` on Windows)
-`RUN ["executable", "param1", "param2"]` (exec form)
+* `RUN <command>` (shell form, the command is run in a shell, which by default is `/bin/sh -c` on Linux or `cmd /S /C` on Windows)
+* `RUN ["executable", "param1", "param2"]` (exec form)
 
 _Notes_: 
 1. The __exec form__ is parsed as a JSON array, which means that you must use double-quotes (`“`) around words not single-quotes (`‘`).

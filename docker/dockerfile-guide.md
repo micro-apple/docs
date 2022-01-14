@@ -16,7 +16,10 @@
       - [1. `WORKDIR`](#1-workdir)
       - [2. `COPY`](#2-copy)
       - [3. `ADD`](#3-add)
-    - [EXPOSE / ENTRYPOINT vs CMD](#expose--entrypoint-vs-cmd)
+    - [EXPOSE / CMD / ENTRYPOINT](#expose--cmd--entrypoint)
+      - [1.EXPOSE](#1expose)
+      - [2. CMD](#2-cmd)
+      - [3. ENTRYPOINT](#3-entrypoint)
     - [ENV ARG](#env-arg)
     - [ONBUILD](#onbuild)
     - [Healthcheck  /  Volume](#healthcheck----volume)
@@ -231,9 +234,44 @@ ADD [--chown=<user>:<group>] ["<src>",... "<dest>"]
   * `[Note]` Resources from remote URLs are not decompressed.
   * 将一个`<src>`是否判断为压缩包是依赖文件的内容，而不是文件的名称，比如你直接`ADD hello.tar.gz  /`, 只是会将这个文件拷贝进去，并不会解压也不会报错。
 
-### EXPOSE / ENTRYPOINT vs CMD 
-    * CMD特点
-    * 含义及区别
+### EXPOSE / CMD / ENTRYPOINT
+#### 1.EXPOSE
+
+* 格式
+```sh
+EXPOSE <port> [<port>/<protocol>...]
+```
+
+```sh
+# the default is TCP if the protocol is not specified.
+EXPOSE 80/tcp
+EXPOSE 80/udp
+```
+
+* `EXPOSE` 指令不是确切的发布的端口， It functions as a type of documentation __between__ the person who builds the image __and__ the person who runs the container, about which ports are intended to be published.
+
+* 运行容器真正发布的端口，其实是通过`docker run`添加`-p`的参数来发布和映射一个或多个端口，或是使用`-P` 发布`EXPOSE`声明的端口并将其映射到高阶端口上。
+
+#### 2. CMD
+The CMD instruction has three forms:
+
+* `CMD ["executable","param1","param2"]` (exec form, this is the preferred form)
+* `CMD ["param1","param2"]` (as default parameters to ENTRYPOINT)
+* `CMD command param1 param2` (shell form)
+
+
+概述:
+* 在`Dockerfile`中只能有一个`cmd`指令, 如果你定义了很多，只有最后一下能够起作用.
+
+* __The main purpose of a `CMD` is to provide defaults for an executing container.__ 这个默认值可以被执行，或是指定一个`ENTRYPOINT'指令来忽略.
+* `CMD`是第二种方式运行时（为`ENTRYPOINT`提供默认的参数）, `CMD` 和 `ENTRYPOINT` 均应该是 `JSON`格式.
+* If the user specifies arguments to `docker run` then they will override the default specified in `CMD`. eg: `docker run -it --rm colynn/ops-debug /bin/sh`
+
+Tips:
+* Do not confuse `RUN` with `CMD`. `RUN` actually runs a command and commits the result; `CMD`在构建时不执行任何东西，但指定镜像的预期命令。
+
+#### 3. ENTRYPOINT
+
 
 ### ENV ARG
 The ARG instruction defines a variable that users can pass at build-time to the builder with the docker build command using the --build-arg <varname>=<value> flag. If a user specifies a build argument that was not defined in the Dockerfile, the build outputs a warning.

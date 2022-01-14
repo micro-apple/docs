@@ -16,9 +16,8 @@
       - [1. `WORKDIR`](#1-workdir)
       - [2. `COPY`](#2-copy)
       - [3. `ADD`](#3-add)
-    - [ENV EXPOSE](#env-expose)
-    - [ENTRYPOINT vs CMD](#entrypoint-vs-cmd)
-    - [ARG](#arg)
+    - [EXPOSE / ENTRYPOINT vs CMD](#expose--entrypoint-vs-cmd)
+    - [ENV ARG](#env-arg)
     - [ONBUILD](#onbuild)
     - [Healthcheck  /  Volume](#healthcheck----volume)
   - [Dockerfile 最佳实践](#dockerfile-最佳实践)
@@ -198,6 +197,19 @@ COPY [--chown=<user>:<group>] ["<src>",... "<dest>"]
 ```
 _注_: 如果路径中包含空格只能采用第二种方式
 
+`COPY` obeys the following rules:
+*  `<src>` 目录必须在构建的上下文内; 你不能执行类似于这样的：`COPY ../something /something`
+*  如果 `<src>` 是一个目录，这个目录下的全部内容均会拷贝进入(__注意__: 目录本身并不会拷贝，只会拷贝目录下的内容)
+
+*  如果 `<src>` 是任何类型的文件. 
+   *  如果 `<dest>` 以 `/`结尾，则`<dest>`将会作为目录，`<src>`的目录将会拷贝至 `<dest>`目录之下;
+   *  如果`<dest>` 不以`/`结尾，则`<dest>`会被覆盖成`<src>`的内容。
+
+* 如果多个 `<src>` 资源被指定时，（不管是文件/目录或是使用通配符的资源）,  `<dest>` 必须是一个目录，也就是说必须依赖 `/`结尾； 另外如果拷贝多个资源时，`<dest>` 不以`/`结尾， builder也提示语法错误。
+
+* 如果 `<dest>` 不存在, 它将和其路径中所有缺失的目录一起被创建。
+
+
 #### 3. `ADD`
 
 ```
@@ -209,15 +221,21 @@ ADD [--chown=<user>:<group>] ["<src>",... "<dest>"]
 * It can handle remote URLs
 * It can also auto-extract tar files.
 
+`ADD` obeys the following rules:
+* 如果 `<src>` 是一个URL, 
+  *  如果 `<dest>` 不是以`/`结尾, 则`<dest>`会被覆盖成`<src>`的内容.
+  *  如果 `<dest>` 以 `/`结尾，则`<dest>`将会作为目录，`<src>`的目录将会拷贝至 `<dest>`目录之下;
+  *  `[Waring]` The URL must __have a nontrivial path__ so that an appropriate filename can be discovered in this case (`http://example.com` will not work).
 
-### ENV EXPOSE 
+* 如果 `<src>` 是一个本地的`tar`包(identity, gzip, bzip2 or xz), 它会被解压为一个目录. When a directory is copied or unpacked, it has the same behavior as `tar -x`. 
+  * `[Note]` Resources from remote URLs are not decompressed.
+  * 将一个`<src>`是否判断为压缩包是依赖文件的内容，而不是文件的名称，比如你直接`ADD hello.tar.gz  /`, 只是会将这个文件拷贝进去，并不会解压也不会报错。
 
-### ENTRYPOINT vs CMD 
+### EXPOSE / ENTRYPOINT vs CMD 
     * CMD特点
     * 含义及区别
 
-
-### ARG
+### ENV ARG
 The ARG instruction defines a variable that users can pass at build-time to the builder with the docker build command using the --build-arg <varname>=<value> flag. If a user specifies a build argument that was not defined in the Dockerfile, the build outputs a warning.
 
 ### ONBUILD

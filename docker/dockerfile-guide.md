@@ -269,6 +269,7 @@ The CMD instruction has three forms:
 
 Tips:
 * Do not confuse `RUN` with `CMD`. `RUN` actually runs a command and commits the result; `CMD`在构建时不执行任何东西，但指定镜像的预期命令。
+* 大家可以看到`CMD`也是存在`exec`、`shell`模型的，所以也存在类似于`RUN`的变量解析的问题。
 
 #### 3. ENTRYPOINT
 

@@ -272,6 +272,9 @@ Tips:
 * 大家可以看到`CMD`也是存在`exec`、`shell`模型的，所以也存在类似于`RUN`的变量解析的问题。
 
 #### 3. ENTRYPOINT
+The ENTRYPOINT instruction has two forms:
+* `ENTRYPOINT ["executable", "param1", "param2"]`  # exec form
+* `ENTRYPOINT command param1 param2`   # shell form
 
 
 ### ENV ARG
